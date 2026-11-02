@@ -6,8 +6,9 @@ RUN apt-get update && \
 
 COPY conf/50-server.cnf /etc/mysql/mariadb.conf.d/
 
-COPY tools/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY tools/init-db.sh /usr/local/bin/init-db.sh
+COPY tools/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh /usr/local/bin/init-db.sh
 
 EXPOSE 3306
-CMD ["/usr/local/bin/entrypoint.sh"]
+CMD ["/usr/local/bin/start.sh"]
