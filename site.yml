@@ -1,0 +1,7 @@
+- name: Deploy Cloud-1 Infrastructure
+  hosts: web
+
+  roles:
+    - { role: common, tags: common }
+    - { role: docker, tags: docker }
+    - { role: app_deploy, tags: app }

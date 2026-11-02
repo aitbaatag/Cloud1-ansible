@@ -1,0 +1,30 @@
+- name: Create application deployment directory
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy stack (compose file and Dockerfiles)
+  ansible.builtin.copy:
+    src: stack/
+    dest: "{{ app_dir }}/"
+    owner: root
+    group: root
+    mode: preserve
+
+- name: Render .env from vault variables
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ app_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: Build and start the stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    build: always
+    state: present

@@ -1,0 +1,72 @@
+services:
+  nginx:
+    build: ./requirements/nginx/.
+    image: nginx:imag
+    container_name: nginx
+    restart: always
+    depends_on:
+      - wordpress
+      - phpmyadmin
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - wordpress-data:/var/www/html
+    networks:
+      - frontend
+
+  wordpress:
+    build: ./requirements/wordpress/.
+    image: wordpress:imag
+    container_name: wordpress
+    restart: always
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - wordpress-data:/var/www/html
+    networks:
+      - frontend
+      - backend
+
+  mariadb:
+    build: ./requirements/mariadb/.
+    image: mariadb:imag
+    container_name: mariadb
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - backend
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mariadb
+      PMA_ABSOLUTE_URI: https://${DOMAIN_NAME}/phpmyadmin/
+    networks:
+      - frontend
+      - backend
+
+volumes:
+  wordpress-data:
+  mariadb-data:
+
+networks:
+  frontend:
+  backend:
+    internal: true
